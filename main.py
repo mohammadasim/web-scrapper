@@ -37,29 +37,32 @@ def get_story_age(
 def run() -> None:
     """Parses the html page.
     Prints the details of top 10 stories"""
-    page = requests.get(URL)
-    # We only want to parse td
-    only_td = SoupStrainer('td')
-    soup = BeautifulSoup(page.content, "html.parser", parse_only=only_td)
-    # Get the title of the story
-    td_title = soup.find_all("td", attrs={"class": "title"})
-    # Get the rank of the story
-    td_rank = soup.find_all("td", attrs={"class": "title", "align": "right"})
-    # Get the metrics of the story
-    td_metrics = soup.find_all("td", attrs={"class": "subtext"})
-    # Some titles have rank td in them,
-    # We need only the titles
-    td_title_only = [title for title in td_title if title not in td_rank]
+    try:
+        page = requests.get(URL)
+        # We only want to parse td
+        only_td = SoupStrainer('td')
+        soup = BeautifulSoup(page.content, "html.parser", parse_only=only_td)
+        # Get the title of the story
+        td_title = soup.find_all("td", attrs={"class": "title"})
+        # Get the rank of the story
+        td_rank = soup.find_all("td", attrs={"class": "title", "align": "right"})
+        # Get the metrics of the story
+        td_metrics = soup.find_all("td", attrs={"class": "subtext"})
+        # Some titles have rank td in them,
+        # We need only the titles
+        td_title_only = [title for title in td_title if title not in td_rank]
 
-    for i in range(11):
-        story_dict = {
-            "rank": get_story_rank(td_rank[i]),
-            "title": get_story_title(td_title_only[i]),
-            "points": get_story_points(td_metrics[i]),
-            "age": get_story_age(td_metrics[i])
-        }
-        RESULTS.append(story_dict)
-    [print(story) for story in RESULTS]
+        for i in range(10):
+            story_dict = {
+                "rank": get_story_rank(td_rank[i]),
+                "title": get_story_title(td_title_only[i]),
+                "points": get_story_points(td_metrics[i]),
+                "age": get_story_age(td_metrics[i])
+            }
+            RESULTS.append(story_dict)
+        [print(story) for story in RESULTS]
+    except ConnectionError as e:
+        print(f"An error happened while connecting to the URL.\n {e}")
 
 
 if __name__ == '__main__':
